@@ -29,7 +29,7 @@ RUN mkdir /var/www
 
 WORKDIR "/var/www"
 
-RUN git clone https://github.com/OpenDroneMap/node-OpenDroneMap .
+RUN git clone https://github.com/OpenDroneMap/NodeODM .
 
 COPY . /var/www
 
