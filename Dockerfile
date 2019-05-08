@@ -1,32 +1,40 @@
-FROM ubuntu:16.04
+FROM opendronemap/odm:latest
+MAINTAINER Piero Toffanin <pt@masseranolabs.com>
 
-RUN apt-get install -y libboost-dev libboost-program-options-dev git
+EXPOSE 3000
 
-RUN mkdir /staging \
-    && git clone https://github.com/pierotofy/LAStools /staging/LAStools \
-    && cd LAStools/LASzip \
-    && mkdir build \
-    && cd build \
-    && cmake -DCMAKE_BUILD_TYPE=Release .. \
-    && make
+USER root
+RUN curl --silent --location https://deb.nodesource.com/setup_10.x | bash -
+RUN apt-get install -y nodejs python-gdal libboost-dev libboost-program-options-dev git cmake
+RUN npm install -g nodemon
 
-RUN git clone https://github.com/pierotofy/PotreeConverter /staging/PotreeConverter \
-    && cd /staging/PotreeConverter \
-    && mkdir build \
-    && cd build \
-    && cmake -DCMAKE_BUILD_TYPE=Release -DLASZIP_INCLUDE_DIRS=/staging/LAStools/LASzip/dll -DLASZIP_LIBRARY=/staging/LAStools/LASzip/build/src/liblaszip.a .. \
-    && make && sudo make install \
+# Build LASzip and PotreeConverter
+WORKDIR "/staging"
+RUN git clone https://github.com/pierotofy/LAStools /staging/LAStools && \
+	cd LAStools/LASzip && \
+	mkdir build && \
+	cd build && \
+	cmake -DCMAKE_BUILD_TYPE=Release .. && \
+	make
 
-# 2) Install gdal2tiles.py script, node.js and npm dependencies
+RUN git clone https://github.com/pierotofy/PotreeConverter /staging/PotreeConverter
+RUN cd /staging/PotreeConverter && \
+	mkdir build && \
+	cd build && \
+	cmake -DCMAKE_BUILD_TYPE=Release -DLASZIP_INCLUDE_DIRS=/staging/LAStools/LASzip/dll -DLASZIP_LIBRARY=/staging/LAStools/LASzip/build/src/liblaszip.a .. && \
+	make && \
+	make install
 
-RUN curl --silent --location https://deb.nodesource.com/setup_6.x | sudo bash - \
-    && apt-get install -y nodejs python-gdal \
-    && git clone https://github.com/OpenDroneMap/NodeODM \
-    && cd NodeODM \ 
-    && npm install 
-    
-USER node-odm     
+RUN mkdir /var/www
 
-CMD mkdir -p /home/node-odm/OpenDroneMap
+WORKDIR "/var/www"
 
-ENTRYPOINT "node index.js --odm_path /home/node-odm/OpenDroneMap"
+RUN git clone https://github.com/OpenDroneMap/node-OpenDroneMap .
+
+COPY . /var/www
+
+
+RUN npm install
+RUN mkdir tmp
+
+ENTRYPOINT ["/usr/bin/nodejs", "/var/www/index.js"]
