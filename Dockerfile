@@ -33,8 +33,6 @@ RUN git clone https://github.com/OpenDroneMap/node-OpenDroneMap .
 
 COPY . /var/www
 
-
 RUN npm install
-RUN mkdir tmp
 
 ENTRYPOINT ["/usr/bin/nodejs", "/var/www/index.js"]
