@@ -5,7 +5,19 @@ EXPOSE 3000
 
 USER root
 RUN curl --silent --location https://deb.nodesource.com/setup_10.x | bash -
-RUN apt-get install -y nodejs python-gdal libboost-dev libboost-program-options-dev git cmake
+RUN apt-get update && \
+    apt-get install -y \
+	cmake \
+	gdal-bin \
+	git \
+	libboost-dev \
+	libboost-program-options-dev \
+    libgdal-dev \
+	libpq-dev \
+	nodejs \
+	npm \
+	python3-gdal
+
 RUN npm install -g nodemon
 
 # Build LASzip and PotreeConverter
@@ -16,14 +28,6 @@ RUN git clone https://github.com/pierotofy/LAStools /staging/LAStools && \
 	cd build && \
 	cmake -DCMAKE_BUILD_TYPE=Release .. && \
 	make
-
-RUN git clone https://github.com/pierotofy/PotreeConverter /staging/PotreeConverter
-RUN cd /staging/PotreeConverter && \
-	mkdir build && \
-	cd build && \
-	cmake -DCMAKE_BUILD_TYPE=Release -DLASZIP_INCLUDE_DIRS=/staging/LAStools/LASzip/dll -DLASZIP_LIBRARY=/staging/LAStools/LASzip/build/src/liblaszip.a .. && \
-	make && \
-	make install
 
 RUN mkdir /var/www
 
