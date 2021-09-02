@@ -39,7 +39,7 @@ jobs:
         uses: docker/build-push-action@v2.6.1
         with:
           context: latest 
-          file: latest/Dockerfile
+          file: Dockerfile
           builder: ${{ steps.buildx.outputs.name }}
           push: true
           tags: harbor.cyverse.org/vice/odm/node:latest
